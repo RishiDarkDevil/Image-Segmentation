@@ -1,5 +1,5 @@
 # Returns the segmented image matrix given an image
-# image.name = ?, number of gaussians to be used, number of iterations, tolerance
+# image.name = ?, number of gaussians to be used(Default: 2), number of iterations(Default: 10), tolerance(Default: 1e-3)
 Segment.Image.EM <- function(image.name, n.gaussians = 2, niter = 10, eps = 1e-3){
   # Required Package
   require(png)
@@ -27,6 +27,8 @@ Segment.Image.EM <- function(image.name, n.gaussians = 2, niter = 10, eps = 1e-3
   prob.mat <- matrix(rep(0, dim(img)[1]*dim(img)[2]*n.gaussians), nrow = dim(img)[1]*dim(img)[2], ncol = n.gaussians)
   
   for(iter in 1:niter){
+    
+    # Expectation Step
     k <- 1
     for(j in 1:dim(img)[2]){
       for (i in 1:dim(img)[1]) {
@@ -43,11 +45,15 @@ Segment.Image.EM <- function(image.name, n.gaussians = 2, niter = 10, eps = 1e-3
     mu.o <- mu
     sigma.o <- sigma
     p.o <- p
+    
+    # Maximization Step
     mu <- colSums(prob.mat*c(img)) / colSums(prob.mat)
     sigma <- sqrt(colSums(prob.mat*(sweep(matrix(rep(c(img), n.gaussians), ncol = n.gaussians), 2, mu))^2)/colSums((prob.mat)))
     p <- colSums(prob.mat)/(dim(img)[1]*dim(img)[2])
     
     cat('iter:', iter, '\n', 'mu:', mu, '\n', 'sigma:', sigma, '\n', 'probs:', p, '\n')
+    
+    # Stops if the L_inf norm falls below tolerance or any of the param becomes NaN
     if((max(abs(mu.o - mu), abs(sigma.o-sigma), abs(p.o-p)) < eps) | NaN %in% mu | NaN %in% sigma | NaN %in% p)
       break
     if(iter == niter)
@@ -66,23 +72,16 @@ Segment.Image.EM <- function(image.name, n.gaussians = 2, niter = 10, eps = 1e-3
 }
 
 # Usage:
-trinaFace.seg <- Segment.Image.EM("trinaFace.png", 3, 10)
-grid::grid.raster(trinaFace.seg$seg.img.mat.1)
-grid::grid.raster(trinaFace.seg$seg.img.mat.2)
-grid::grid.raster(trinaFace.seg$seg.img.mat.3)
-
-dog.seg <- Segment.Image.EM("dog.png", 3, 10)
+dog.seg <- Segment.Image.EM("dog.png", 2, 10)
 grid::grid.raster(dog.seg$seg.img.mat.1)
 grid::grid.raster(dog.seg$seg.img.mat.2)
-grid::grid.raster(dog.seg$seg.img.mat.3)
+writePNG(dog.seg$seg.img.mat.1, "seg-dog-1.png")
+writePNG(dog.seg$seg.img.mat.2, "seg-dog-2.png")
 
 brain.seg <- Segment.Image.EM("brainMRI.png", 3, 100)
 grid::grid.raster(brain.seg$seg.img.mat.1)
 grid::grid.raster(brain.seg$seg.img.mat.2)
 grid::grid.raster(brain.seg$seg.img.mat.3)
-
-# ----Takes a Bit of Time----
-trina.seg <- Segment.Image.EM("trina.png", 3, 10)
-grid::grid.raster(trina.seg$seg.img.mat.1)
-grid::grid.raster(trina.seg$seg.img.mat.2)
-grid::grid.raster(trina.seg$seg.img.mat.3)
+writePNG(brain.seg$seg.img.mat.1, "seg-brain-1.png")
+writePNG(brain.seg$seg.img.mat.2, "seg-brain-2.png")
+writePNG(brain.seg$seg.img.mat.3, "seg-brain-3.png")
