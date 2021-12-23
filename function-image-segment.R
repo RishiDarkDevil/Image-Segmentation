@@ -16,13 +16,13 @@ Segment.Image.EM <- function(image.name, n.gaussians = 2, niter = 10, eps = 1e-3
   # Seeing the image
   grid::grid.raster(img)
   
-  # I am assuming that the data is generated from 2 clusters(Normal Clusters)
+  # I am assuming that the data is generated from n.gaussians number of clusters(Normal Clusters)
   
   mu <- floor((-n.gaussians/2)+1):floor(n.gaussians/2) 
   sigma <- rep(1, n.gaussians)
   p <- rep(1/n.gaussians, n.gaussians)
   
-  # Creating a matrix of N x 2 size where N = 200x200(i.e. total number of pixels) and 2 cause that's the probability that a particular pixel belongs
+  # Creating a matrix of N x n.gaussians size where N = dim(img)[1] x dim(img)[2](i.e. total number of pixels) and n.gaussians cause that's the probability that a particular pixel belongs
   # to a particular cluster
   prob.mat <- matrix(rep(0, dim(img)[1]*dim(img)[2]*n.gaussians), nrow = dim(img)[1]*dim(img)[2], ncol = n.gaussians)
   
