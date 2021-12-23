@@ -8,7 +8,7 @@ One Major Drawbacks of simply Using EM-Algorithm without modification are:
 
 Usage:
 - Run the lines of commands in `function-image-segment.R` Rscript.
-- Before running it on example images keep the PNG images in the same folder where the RScript is running.
+- Before running it on example images keep the PNG(grayscale - Color PNG not supported yet) images in the same folder where the RScript is running.
 
 Tip:
 - Use RStudio for smoother experience.
