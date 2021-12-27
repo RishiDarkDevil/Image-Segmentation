@@ -62,7 +62,7 @@ Segment.Image.EM <- function(image.name, n.gaussians = 2, niter = 10, eps = 1e-3
   
   # Visualizing the segmentation
   seg.img <- matrix(rep(c(img), n.gaussians), ncol = n.gaussians)
-  seg.img[prob.mat < 0.5] = 1
+  seg.img[prob.mat < 1/n.gaussians] = 1
   segmented.image <- list()
   
   for (i in 1:n.gaussians) {
