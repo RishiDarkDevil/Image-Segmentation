@@ -16,6 +16,8 @@ library(knitr)
 library(kableExtra)
 library(purrr)
 library(viridis)
+library(jpeg)
+library(png)
 options(dplyr.summarise.inform = FALSE)
 ```
 
@@ -70,45 +72,53 @@ Here we will apply the above described algorithm on some Brain MRI Images, etc.
 # Returns the segmented image matrix given an image
 # image.name = ?, number of gaussians to be used(Default: 2), number of iterations(Default: 10), tolerance(Default: 1e-3)
 Segment.Image.EM <- function(image.name, n.gaussians = 2, niter = 10, eps = 1e-3){
-  # Required Package
-  require(png)
   
-  # Reading the image
-  img <<- readPNG(image.name)
+  if (substr(image.name, str_length(image.name)-2, str_length(image.name)) == 'png') {
+    # Required Package
+    require(png)
+    # Reading the image
+    img <- readPNG(image.name)
+  }
+  else{
+    # Required Package
+    require(jpeg)
+    # Reading the image
+    img <- readJPEG(image.name)
+  }
   
   # Seeing the image matrix
-  print("Image Info:")
+  #print("Image Info:")
   if(length(dim(img)) == 3)
-    img <<- img[ , ,1]
-  print(dim(img))
+    img <- img[ , ,1]
+  #print(dim(img))
   
   # Seeing the image
   grid::grid.raster(img)
   
   # I am assuming that the data is generated from n.gaussians number of clusters(Normal Clusters)
   
-  mu <<- floor((-n.gaussians/2)+1):floor(n.gaussians/2) 
-  sigma <<- rep(1, n.gaussians)
-  p <<- rep(1/n.gaussians, n.gaussians)
+  mu <- floor((-n.gaussians/2)+1):floor(n.gaussians/2) 
+  sigma <- rep(1, n.gaussians)
+  p <- rep(1/n.gaussians, n.gaussians)
   
   # Creating a matrix of N x n.gaussians size where N = dim(img)[1] x dim(img)[2](i.e. total number of pixels) and n.gaussians cause that's the probability that a particular pixel belongs
   # to a particular cluster
-  prob.mat <<- matrix(rep(0, dim(img)[1]*dim(img)[2]*n.gaussians), nrow = dim(img)[1]*dim(img)[2], ncol = n.gaussians)
+  prob.mat <- matrix(rep(0, dim(img)[1]*dim(img)[2]*n.gaussians), nrow = dim(img)[1]*dim(img)[2], ncol = n.gaussians)
   
   for(iter in 1:niter){
     
     # Expectation Step
-    k <<- 1
+    k <- 1
     for(j in 1:dim(img)[2]){
       for (i in 1:dim(img)[1]) {
-        deno.prob <<- 0
-        num.prob.r <<- c()
+        deno.prob <- 0
+        num.prob.r <- c()
         for (r in 1:n.gaussians) {
-          num.prob.r <<- c(num.prob.r, p[r]*dnorm(img[i,j], mu[r], sigma[r]))
-          deno.prob <<- deno.prob + num.prob.r[r]
+          num.prob.r <- c(num.prob.r, p[r]*dnorm(img[i,j], mu[r], sigma[r]))
+          deno.prob <- deno.prob + num.prob.r[r]
         }
-        prob.mat[k, ] <<- num.prob.r / deno.prob
-        k <<- k+1
+        prob.mat[k, ] <- num.prob.r / deno.prob
+        k <- k+1
       }
     }
     mu.o <<- mu
@@ -116,9 +126,9 @@ Segment.Image.EM <- function(image.name, n.gaussians = 2, niter = 10, eps = 1e-3
     p.o <<- p
     
     # Maximization Step
-    mu <<- colSums(prob.mat*c(img)) / colSums(prob.mat)
-    sigma <<- sqrt(colSums(prob.mat*(sweep(matrix(rep(c(img), n.gaussians), ncol = n.gaussians), 2, mu))^2)/colSums((prob.mat)))
-    p <<- colSums(prob.mat)/(dim(img)[1]*dim(img)[2])
+    mu <- colSums(prob.mat*c(img)) / colSums(prob.mat)
+    sigma <- sqrt(colSums(prob.mat*(sweep(matrix(rep(c(img), n.gaussians), ncol = n.gaussians), 2, mu))^2)/colSums((prob.mat)))
+    p <- colSums(prob.mat)/(dim(img)[1]*dim(img)[2])
     
     #cat('iter:', iter, '\n', 'mu:', mu, '\n', 'sigma:', sigma, '\n', 'probs:', p, '\n')
     
@@ -141,8 +151,33 @@ Segment.Image.EM <- function(image.name, n.gaussians = 2, niter = 10, eps = 1e-3
 }
 ```
 
-```{r brain_MRI_1, fig.asp=1, fig.width=12}
-tall_df2 <- 
+```{r brain_image, cache=TRUE, fig,asp=1, fig.width=12}
+brain.img <- 
+```
+
+```{r brain_gaussian, fig.asp=1, fig.width=12}
+x <- seq(min(mu.o)-5*max(sigma.o), max(mu.o)+5*max(sigma.o), by = 0.001)
+my_data <- tibble(mean = mu.o, stdev = sigma.o, test = as.character(1:length(mu.o)))
+tall_df2 <- pmap_df(my_data, ~data_frame(x = x, test = ..3, density = dnorm(x, ..1, ..2)))
+
+p <- ggplot(tall_df2, aes(color = factor(test), x = x, y = density)) +
+  geom_line() +
+  geom_segment(data = my_data, aes(color = test, x = mean, y = 0, xend = mean, yend = 100), linetype = "dashed") + 
+  coord_cartesian(ylim = c(0,3))  +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5), panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), strip.background = element_blank()) +
+  theme(legend.position = "bottom") +
+  labs(color = "Gaussian Models") +
+  guides(
+    fill = guide_legend(
+      nrow = 1
+    )
+  ) + ggtitle("The Gaussians Estimated From Image")
+
+t <- ggtexttable(tibble(props = round(p.o, digits = 2)), rows = NULL, theme = ttheme("mVioletWhite")) %>% 
+  tab_add_title("Props", face = 'bold')
+
+ggarrange(p, t, ncol = 2, widths = c(9,1))
 ```
 
 
