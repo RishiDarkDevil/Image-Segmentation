@@ -37,9 +37,10 @@ Image is thought of as a random process, particularly, a mixture of random proce
 - **pixels are iid sample from the above mentioned GMM**.
 The GMM model's pdf is given by-
 $$f(x_i|\Phi) = \sum_{k=1}^{K}p_k.G(x_i|\theta_k)$$
-Where K is the nmber of processes or classes that need to be extracted from the image, $\theta_k\ \forall\ k=1,2,\dots, K$ is a parameter vector of class  and its form $[\mu_k,\ \sigma_k]$ such that $\mu_k,\ \sigma_k$ are mean and standard deviation of the distribution $k$, respectively, $p_k$ is mixing proportion of class $k$ ($0<p_k<1,\ \forall\ k=1,\dots,K$ and $\sum_kp_k=1$), $x_i$ is the intensity of pixel $i$, and $\Phi = \{p_1,\dots, p_k, \mu_1,\dots,\mu_k \}$ is called the parameters vector of the mixture.
 
-The parameter vector $\Phi$ is the missing data that defines the mixture. The EM ALgorithm utilize the maximum log-likelihood estimator to estimate the value of $\Phi$. The likelihood is given by,
+Where K is the number of processes or classes that need to be extracted from the image, $\theta_k\ \forall\ k=1,2,\dots, K$ is a parameter vector of class  and its form $[\mu_k,\ \sigma_k]$ such that $\mu_k,\ \sigma_k$ are mean and standard deviation of the distribution $k$ with density $G_k(x|\theta_k)$, respectively, $p_k$ is mixing proportion of class $k$ ($0<p_k<1,\ \forall\ k=1,\dots,K$ and $\sum_kp_k=1$), $x_i$ is the intensity of pixel $i$, and $\Phi = \{p_1,\dots, p_k, \mu_1,\dots,\mu_k \}$ is called the parameters vector of the mixture.
+
+**The parameter vector $\Phi$ is the missing data that defines the mixture**. The EM Algorithm utilize the maximum log-likelihood estimator to estimate the value of $\Phi$. The likelihood is given by,
 $$L(\Phi) = f(x_1,\dots,x_n|\Phi) = \prod_{i=1}^n f(x_i|\Phi)$$
 We use the EM-Algorithm to solve for $\Phi_{ML}$, which maximizes the likelihood (otherwise computationally expensive(sometimes intractable)) i.e.,
 $$L(\Phi_{ML}) = arg\ max\ (L(\Phi))$$
@@ -47,7 +48,7 @@ Hence, $\Phi_{ML}$ is called the maximum log-likelihood estimato of $\Phi$.
 
 ### EXPECTATION MAXIMIZATION ALGORITHM
 
-Once the true value of the parameters are found then the class of each pixel in the image can be easily determined by computing the probability of this pixel to be belong to each class in the image. The EM algorithm is used to find the unknown parameters of a mixture model, that maximizes the log-likelihood of the sample.
+Once the true value of the parameters are found then the class of each pixel in the image can be easily determined by computing the probability of this pixel to be belong to each class in the image. The **EM algorithm is used to find the unknown parameters of a mixture model, that maximizes the log-likelihood of the sample**.
 
 - The **Expectation(E) Step**:
 Compute the expected value of $z_{ik}$ use the current estimate of the parameter vector $\Phi$,
@@ -62,7 +63,7 @@ $$p_k^{(t+1)} = \frac{\sum_{i=1}^N z_{ik}^{(t)}}{N}$$
 We keep on iterating the above two steps until the parameter estimates change in an iteration falls below some tolerance level or when NaN comes in the optimization after optimizing implying no further numerical optimization can be done.
 
 - The **Classification Step**:
-After we have applied EM-Algorithm and we have the parameter estimate, we use it to find the probability(density) at each point belonging to each of the $K$ class. Then, we classify the point to be belonging to the class which attains the maximum probability(density) for that point out of the $K$ classes.
+After we have applied EM-Algorithm and we have the parameter estimate, we use it to find the probability(density) at each point belonging to each of the $K$ class. Then, we **classify the point to be belonging to the class which attains the maximum probability(density) for that point out of the $K$ classes**.
 
 # APPLICATION
 
@@ -153,7 +154,7 @@ Segment.Image.EM <- function(image.name, n.gaussians = 2, niter = 10, eps = 1e-3
 }
 ```
 
-```{r brain_image, cache=TRUE, fig,asp=1, fig.width=12}
+```{r brain_image, fig,asp=1, fig.width=5}
 brain.img <- readJPEG("brainMRI.jpg")
 plot(1:2, type = "n")
 rasterImage(brain.img, 1,1, 2,2)
@@ -164,7 +165,7 @@ rasterImage(brain.img, 1,1, 2,2)
 brain.seg <- Segment.Image.EM("brainMRI.jpg", 3,  niter = 4000)
 ```
 
-```{r brain_gaussian, fig.asp=1, fig.width=12}
+```{r brain_gaussian, fig.asp=1, fig.width=12, warning=FALSE}
 x <- seq(min(mu.o)-5*max(sigma.o), max(mu.o)+5*max(sigma.o), by = 0.001)
 my_data <- tibble(mean = mu.o, stdev = sigma.o, test = as.character(1:length(mu.o)))
 tall_df2 <- pmap_df(my_data, ~data_frame(x = x, test = ..3, density = dnorm(x, ..1, ..2)))
@@ -188,6 +189,7 @@ t <- ggtexttable(tibble(mean = round(mu.o, digits = 2), stdev = round(sigma.o, d
 
 ggarrange(p, t, ncol = 2, widths = c(8,2))
 ```
+
 - Now, coming to the most interesting part that is seeing the result of the segmentation. The Segmentation works almost perfectly and separates the required 3 parts without any manual intervention apart from deciding on the number of clusters, tolerance and iteration limit.
 ```{r brain_segemented, fig.asp=1, fig.width=12}
 par(mfrow = c(2,2))
@@ -201,6 +203,7 @@ plot(1:2, type = "n", main = "White Matter Separated", xlab = "X", ylab = "Y")
 rasterImage(brain.seg$seg.img.mat.3, 1,1, 2,2)
 par(mfrow = c(1,1))
 ```
+
 - Let's Apply our Segmentation function on some other images, to see how well it works. One possible application of this technique can be to scan handwritten notes, sketches, etc. and from below it looks like a perfectly scanned note(We obv. used 2 clusters).
 ```{r handwritten_run_func, cache=TRUE}
 handwritten.img <- readJPEG("handwritten.jpg")
@@ -222,12 +225,14 @@ par(mfrow = c(1,1))
 # CONCLUSION
 
 We used EM-Algorithm to Segment Image into sections which have common characteristics. This has the following advantages:
+
 - It is computationally comparatively fast.
 - Running few iterations works fine for most cases.
 - Can use any number of clusters.
 - Helps in study of ROI of an image(specially medical images).
 
 Drawbacks:
+
 - It models pixels as iid samples rather than taking advantage of the spatial correlation.
 - Have to choose the number of clusters wisely.
 - Produces granular segmented images sometimes(Due to the 1st Drawback).
