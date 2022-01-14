@@ -59,7 +59,7 @@ Here we will apply the above described algorithm on some Brain MRI Images, etc.
 - We have the following Brain MRI Image and taking a look at it we can visually see 3 different classes is the most probable i.e. the background, the CSF and the gray matter.
 
 
-![](Image-Segmentation_files/figure-html/brain_image.png)<!-- -->
+![](brain_image.png)<!-- -->
 
 -  We run the algorithm with K=3(3 clusters), tolerance of $10^{-3}$, maximum iteration of 4000. We get convergence as per the tolerance criteria, below we show the estimated Normals and their proportions as found by EM-Algorithm. Just by glancing we see that the proportion of the black pixels which is supposed to be coming from the degenerate normal model is 64%, and since most of the MRI Scan is black it seems okay. 
 
@@ -72,7 +72,7 @@ Here we will apply the above described algorithm on some Brain MRI Images, etc.
 - Let's Apply our Segmentation function on some other images, to see how well it works. One possible application of this technique can be to scan handwritten notes, sketches, etc. and from below it looks like a perfectly scanned note(We obv. used 2 clusters).
 
 
-![](Image-Segmentation_files/figure-html/handwritten_segment.png)<!-- -->
+![](handwritten_segment.png)<!-- -->
 
 # CONCLUSION
 
