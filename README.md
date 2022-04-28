@@ -1,4 +1,5 @@
 # Image-Segmentation
+![](Image-Segmentation_files/figure-html/brain_segemented-1.png)
 I have applied EM(Expectation-Maximization) Algorithm to attain Image Segmentation assuming the original Image was from a GMM(Gaussian Mixture Model), assuming Univariate Gaussians.\
 It is specially useful to segment image in cases like brainMRI scan as shown in one of the test image and output segmented images as it helps us label different parts of the brain based on Intensity Based MRI Images, automatically without Manual Intervention.
 
