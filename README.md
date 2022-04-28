@@ -17,5 +17,7 @@ Usage:
 - Run the lines of commands in `function-image-segment.R` Rscript.
 - Before running it on example images keep the PNG(grayscale - Color PNG not supported yet) images in the same folder where the RScript is running.
 
+One can view the test images and segmented output images obtained in the folders `Test-Images` and `Segmented-Image` respectively.
+
 Tip:
 - Use RStudio for smoother experience.
