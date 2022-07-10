@@ -32,7 +32,9 @@ Where K is the number of processes or classes that need to be extracted from the
 $$L(\Phi) = f(x_1,\dots,x_n|\Phi) = \prod_{i=1}^n f(x_i|\Phi)$$
 We use the EM-Algorithm to solve for $\Phi_{ML}$, which maximizes the likelihood (otherwise computationally expensive(sometimes intractable)) i.e.,
 $$L(\Phi_{ML}) = arg\ max\ (L(\Phi))$$
-Hence, $\Phi_{ML}$ is called the maximum log-likelihood estimato of $\Phi$.
+
+Hence, $\Phi_{ML}$ is called the maximum log-likelihood estimaton of
+$\Phi$.
 
 ### EXPECTATION MAXIMIZATION ALGORITHM
 
